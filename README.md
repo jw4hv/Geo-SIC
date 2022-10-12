@@ -26,7 +26,7 @@ Below is a *QuickStart* guide on how to use Geo-SIC for network training and tes
     We use .yaml file to manage the paramters used in this model, an example of parameters is given as follows, 
 
                     study:
-                            name: 'prototype' (namming the model)
+                            name: 'prototype' (naming the model)
 
                     data:
                         predict: '2D' (choose 2D or 3D)
