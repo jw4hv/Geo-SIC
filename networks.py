@@ -257,39 +257,19 @@ class VxmDense(LoadableModel):
 
         # concatenate inputs and propagate unet
         x = torch.cat([source, target], dim=1)
+        
         x,latent_f = self.unet_model(x)
+        
         # print (latent_f.shape)
         # transform into flow field
         flow_field = self.flow(x)
 
         # resize flow for integration
         pos_flow = flow_field
-        if self.resize:
-            pos_flow = self.resize(pos_flow)
+        '''Checking momentum shape'''
+        print (pos_flow.shape)
 
-        preint_flow = pos_flow
-        # negate flow for bidirectional model
-        neg_flow = -pos_flow if self.bidir else None
-
-        # integrate to produce diffeomorphic warp
-        if self.integrate:
-            pos_flow = self.integrate(pos_flow)
-            neg_flow = self.integrate(neg_flow) if self.bidir else None
-
-            # resize to final resolution
-            if self.fullsize:
-                pos_flow = self.fullsize(pos_flow)
-                neg_flow = self.fullsize(neg_flow) if self.bidir else None
-
-        # warp image with flow field
-        y_source = self.transformer(source, pos_flow)
-        y_target = self.transformer(target, neg_flow) if self.bidir else None
-
-        # return non-integrated flow field if training
-        if not registration:
-            return (y_source, y_target, preint_flow) if self.bidir else (y_source, preint_flow)
-        else:
-            return y_source, pos_flow, latent_f
+        return pos_flow,latent_f
 
 
 class ConvBlock(nn.Module):
