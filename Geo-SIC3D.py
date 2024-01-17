@@ -202,17 +202,17 @@ for epoch in range(para.solver.epochs):
     for j, atlas_data in enumerate(trainloader):
         inputs = atlas_data['input_image'].to(dev)
         batch_labels = atlas_data['gt'].to(dev)
-        b, c, w, h, len = inputs.shape
+        b, c, w, h, l = inputs.shape
         opt.zero_grad()
         atlas = ave_scan
-        source_b = torch.cat(b*[atlas]).reshape(b , c, w , h, len)
+        source_b = torch.cat(b*[atlas]).reshape(b , c, w , h, l)
         pred = net(source_b, inputs, registration = True)   #prediction size (b, 3, 128,128,128)
         m0 = pred[0]
         latent_feature = pred[1]
         ############################ Using Fourier EPDiff in C++ ###########################
 
         for batch_id in range (0, b):
-            src = atlas[batch_id,0,:,:,:].reshape(w,h,len).detach().cpu().numpy()
+            src = atlas[batch_id,0,:,:,:].reshape(w,h,l).detach().cpu().numpy()
             '''Check sources'''
             # if ((epoch%printfreq==0) and (batch_id == 0)):
             #     im= sitk.GetImageFromArray(src, isVector=False)
@@ -220,7 +220,7 @@ for epoch in range(para.solver.epochs):
             #     sitk.WriteImage(sitk.GetImageFromArray(src, isVector=False), save_path,False)
             '''Saving sources for FLASH'''
             sitk.WriteImage(sitk.GetImageFromArray(src, isVector=False), './source.mhd',False)
-            tar = inputs[batch_id,0,:,:,:].reshape(w,h,len).detach().cpu().numpy()
+            tar = inputs[batch_id,0,:,:,:].reshape(w,h,l).detach().cpu().numpy()
             '''Check targets'''
             # if ((epoch%printfreq==0)and (batch_id == 0)):
             #     im = sitk.GetImageFromArray(tar, isVector=False)
@@ -230,7 +230,7 @@ for epoch in range(para.solver.epochs):
             sitk.WriteImage(sitk.GetImageFromArray(tar, isVector=False), './target.mhd',False)
 
             '''Saving momentum fields for FLASH'''
-            velo = m0[batch_id,:,:,:,:].reshape(c*3,w,h,len)
+            velo = m0[batch_id,:,:,:,:].reshape(c*3,w,h,l)
             velo = velo.permute(1,2,3,0).detach().cpu().numpy()
             sitk.WriteImage(sitk.GetImageFromArray(velo,isVector=True), './v0Spatial.mhd',False)
 
@@ -241,7 +241,7 @@ for epoch in range(para.solver.epochs):
             gradv = gradv.permute(0, 3, 1, 2)
             # print (gradv.shape)
             gradv_batch[batch_id,:,:,:,:] = gradv
-            gradv_save = gradv.reshape(c,w,h,len)
+            gradv_save = gradv.reshape(c,w,h,l)
             gradv_save = gradv_save.permute(1,2,3,0).detach().cpu().numpy()
 
             ''' Checking gradients'''
