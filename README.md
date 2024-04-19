@@ -40,6 +40,6 @@ To use the repository, simply execute the script Run_Atlas_Trainer.py.
     weight_decay: Weight decay parameter.
     pre_train: Number of epochs for pre-training.
     Euler_steps: Number of steps for Euler integration.
-    Alpha: Alpha in shoorting.
-    Gamma: Gamma in shoorting.
-    Lpow: the power of laplacian operator in shoorting.
+    Alpha: Alpha in shooting.
+    Gamma: Gamma in shooting.
+    Lpow: the power of laplacian operator in shooting.
