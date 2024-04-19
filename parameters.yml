@@ -1,0 +1,23 @@
+
+model:
+    optimizer: 'Adam'
+    scheduler: 'CosAn'
+    loss: 'L2'    
+    augmentation: False
+    image_grad: False
+    kernel_K: False
+    pure_atlas_bulding: True
+    reduced_dim: 16
+    pretrain_epoch: 300
+
+solver:
+    lr: 0.001
+    atlas_lr: 0.0002
+    epochs: 2
+    batch_size: 1
+    weight_decay: 0.0001
+    pre_train: 200
+    Euler_steps: 10
+    Alpha: 2.0 
+    Gamma: 1.0
+    Lpow: 4  
