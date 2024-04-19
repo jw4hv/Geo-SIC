@@ -8,10 +8,11 @@ We have recently updated the geometric shape learning based on Fourier represent
 
 Upcoming Additions
 
-Very soon, we plan to provide additional ways to learn geometric shapes using different techniques in classifers as follows, stay tuned.
+Very soon, we will update the joint learning of classifiers with multiple ways to learn geometric shapes using different techniques. This update will include:
 
     Stationary Velocity Field in Voxelmorph (Paper: https://arxiv.org/abs/1809.05231, Code: https://github.com/voxelmorph/voxelmorph).
     Vector-Momenta Shooting Method in Lagomorph (Paper: https://openreview.net/pdf?id=Hkg0j9sA1V, Code: https://github.com/jacobhinkle/lagomorph).
+Stay tuned for these updates, coming soon!
 
 ```Usage```
 
