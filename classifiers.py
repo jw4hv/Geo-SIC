@@ -1,9 +1,6 @@
 import torch
 import torch.nn as nn
 
-import torch
-import torch.nn as nn
-
 class Flexi3DCNN(nn.Module):
     def __init__(self, in_channels, conv_channels, conv_kernel_sizes, num_classes, activation):
         super(Flexi3DCNN, self).__init__()
