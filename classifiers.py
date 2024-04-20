@@ -1,35 +1,47 @@
-import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
-class simpleeCNN(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.conv1 = nn.Conv2d(1, 8, 5, stride=1, padding = 1, bias = True)
-        nn.init.xavier_uniform_(self.conv1.weight)
-        self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(8, 16, 5, stride=1, padding = 1, bias = True)
-        nn.init.xavier_uniform_(self.conv2.weight)
-        self.conv3 = nn.Conv2d(16, 8, 5, stride=1, padding = 1, bias = True)
-        nn.init.xavier_uniform_(self.conv3.weight)
-        self.fc1 = nn.Linear(1568, 2048) 
-        nn.init.xavier_uniform_(self.fc1.weight)
-        self.fc2 = nn.Linear(2048, 200)
-        nn.init.xavier_uniform_(self.fc2.weight)
-        self.fc3 = nn.Linear(200, 2)
-        nn.init.xavier_uniform_(self.fc3.weight)
-        self.act = nn.PReLU()
+import torch
+import torch.nn as nn
 
-    def forward(self, x, latent ):
-        x = self.pool(self.act(self.conv1(x)))
-        x = self.pool(self.act(self.conv2(x)))
-        x = self.pool(self.act(self.conv3(x)))
-        x = torch.flatten(x, 1) # flatten all dimensions except batch
+class Flexi3DCNN(nn.Module):
+    def __init__(self, in_channels, conv_channels, conv_kernel_sizes, num_classes, activation):
+        super(Flexi3DCNN, self).__init__()
+        self.num_conv_layers = len(conv_channels)
+
+        # Define convolutional layers
+        self.conv_layers = nn.ModuleList()
+        for i in range(self.num_conv_layers):
+            if i == 0:
+                conv_layer = nn.Conv3d(in_channels, conv_channels[i], kernel_size=conv_kernel_sizes[i], stride=1, padding=1)
+            else:
+                conv_layer = nn.Conv3d(conv_channels[i-1], conv_channels[i], kernel_size=conv_kernel_sizes[i], stride=1, padding=1)
+            self.conv_layers.append(conv_layer)
+
+        # Pooling layer
+        self.pool = nn.MaxPool3d(kernel_size=2, stride=2)
+
+        # Fully connected layers
+        self.fc1 = nn.Linear(conv_channels[-1] * 4 * 4 * 4, 128)
+        self.fc2 = nn.Linear(128, num_classes)
+
+        # Activation function
+        if activation == 'ReLU':
+            self.act = nn.ReLU()
+        elif activation == 'LeakyReLU':
+            self.act = nn.LeakyReLU()
+        else:
+            raise ValueError("Unsupported activation function.")
+
+    def forward(self, x, latent_f, weight_f):
+        # Convolutional layers
+        for conv_layer in self.conv_layers:
+            x = self.act(self.pool(conv_layer(x)))
+        x = weight_f*latent_f + x 
+        x = torch.flatten(x, 1)
+        # Fully connected layers
         x = self.act(self.fc1(x))
-        latent = torch.flatten(latent, 1) 
-        # print (latent.shape)
-        x = x + latent 
-        x = self.act(self.fc2(x))
-        x = self.fc3(x)
+        x = self.fc2(x)
+
         return x
+

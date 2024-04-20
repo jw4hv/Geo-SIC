@@ -21,3 +21,4 @@ solver:
     Alpha: 2.0 
     Gamma: 1.0
     Lpow: 4  
+    Sigma: 0.02

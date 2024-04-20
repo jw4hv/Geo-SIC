@@ -99,7 +99,7 @@ class Grad:
         self.penalty = penalty
         self.loss_mult = loss_mult
 
-    def loss(self, _, y_pred):
+    def loss(self,  y_pred):
         dy = torch.abs(y_pred[:, :, 1:, :, :] - y_pred[:, :, :-1, :, :])
         dx = torch.abs(y_pred[:, :, :, 1:, :] - y_pred[:, :, :, :-1, :])
         dz = torch.abs(y_pred[:, :, :, :, 1:] - y_pred[:, :, :, :, :-1])

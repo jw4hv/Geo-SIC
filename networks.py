@@ -268,7 +268,7 @@ class UnetDense(LoadableModel):
         # configure transformer
         self.transformer = SpatialTransformer(inshape)
 
-    def forward(self, source, target, registration=False):
+    def forward(self, source, target, registration=False, shooting = None):
         '''
         Parameters:
             source: Source image tensor.
@@ -280,17 +280,39 @@ class UnetDense(LoadableModel):
         x = torch.cat([source, target], dim=1)
         
         x,latent_f = self.unet_model(x)
-        
-        # print (latent_f.shape)
         # transform into flow field
         flow_field = self.flow(x)
-
         # resize flow for integration
         pos_flow = flow_field
-        '''Checking momentum shape'''
-        pos_flow = self.fullsize(pos_flow)
+        if self.resize:
+            pos_flow = self.resize(pos_flow)
 
-        return pos_flow, latent_f
+        preint_flow = pos_flow
+        # negate flow for bidirectional model
+        neg_flow = -pos_flow if self.bidir else None
+
+        # integrate to produce diffeomorphic warp j
+        if (shooting == "SVF"):
+            if self.integrate:
+                pos_flow = self.integrate(pos_flow)
+                neg_flow = self.integrate(neg_flow) if self.bidir else None
+
+                # resize to final resolution
+                if self.fullsize:
+                    pos_flow = self.fullsize(pos_flow)
+                    neg_flow = self.fullsize(neg_flow) if self.bidir else None
+        else:
+            pos_flow = self.fullsize(pos_flow)
+            neg_flow = self.fullsize(neg_flow) if self.bidir else None
+        # warp image with flow field
+
+        y_source = self.transformer(source, pos_flow)
+
+        # return non-integrated flow field if training
+        if not registration:
+            return (y_source, y_target, preint_flow) if self.bidir else (y_source, preint_flow)
+        else:
+            return y_source, pos_flow, latent_f # Deformed image (if svf = true), transformation field, and latent features
 
 
 class ConvBlock(nn.Module):
